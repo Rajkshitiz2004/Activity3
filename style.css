@@ -104,6 +104,22 @@ body {
   color: var(--text-muted);
 }
 
+.model-select {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-size: 0.8rem;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  padding: 0.2rem;
+}
+
+.model-select option {
+  background: var(--bg-sidebar);
+  color: var(--text-main);
+}
+
 .chat-messages {
   flex: 1;
   overflow-y: auto;

@@ -13,6 +13,7 @@ const sendBtn = document.getElementById('send-btn');
 const chatModeBtn = document.getElementById('chat-mode');
 const imageModeBtn = document.getElementById('image-mode');
 const typingIndicator = document.getElementById('typing-indicator');
+const modelSelector = document.getElementById('model-selector');
 
 let currentMode = 'chat'; // 'chat' or 'image'
 
@@ -47,6 +48,14 @@ function init() {
     imageModeBtn.classList.add('active');
     chatModeBtn.classList.remove('active');
     userInput.placeholder = "Describe the image you want to generate...";
+    modelSelector.disabled = true;
+    document.querySelector('.input-wrapper').style.borderColor = 'var(--accent-secondary)';
+  });
+
+  // Model Selection
+  modelSelector.addEventListener('change', (e) => {
+    CONFIG.TEXT_MODEL = e.target.value;
+    console.log('Text model changed to:', CONFIG.TEXT_MODEL);
   });
 }
 
@@ -89,10 +98,20 @@ async function generateImage(prompt) {
       }
     );
     
-    if (!response.ok) throw new Error(`HuggingFace Error: ${response.statusText}`);
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        let msg = errorData.error || response.statusText || 'Unknown Error';
+        if (response.status === 503 && errorData.estimated_time) {
+          msg = `Model is loading. Please try again in about ${Math.round(errorData.estimated_time)} seconds.`;
+        }
+        throw new Error(`HuggingFace Error: ${msg}`);
+    }
     return await response.blob();
   } catch (error) {
     console.error(error);
+    if (error.message.includes('Failed to fetch')) {
+        return { error: 'Network error or CORS issue. This often happens if the Hugging Face model is currently offline or loading.' };
+    }
     return { error: error.message };
   }
 }
